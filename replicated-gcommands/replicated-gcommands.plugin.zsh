@@ -30,7 +30,7 @@ gcreate() {
   local image_project
   image_project="$(echo "${image}" | awk '{print $2}')"
   local default_service_account
-  default_service_account="$(gcloud iam service-accounts list | grep '\-compute@developer.gserviceaccount.com' | awk 'BEGIN {FS="  "}; {print $2}')"
+  default_service_account="$(gcloud iam service-accounts list | grep -o '[0-9]*\-compute@developer.gserviceaccount.com')"
   shift
   local instance_names=("$@")
   if [ -n "${GPREFIX}" ]; then
