@@ -50,8 +50,12 @@ gcreate() {
 
 gdelete() {
   genv
-  local usage="Usage: gdelete [INSTANCE_NAMES]"
-  if ! gcloud compute instances list --filter="labels.owner:${GUSER}" | awk '{if(NR>1)print}' | grep RUNNING ; then echo "no instances match \"labels.owner:${GUSER}\""; echo "${usage}" return 1; fi
+  local usage="Usage: gdelete [INSTANCE_NAME_PREFIX]"
+  local instance_name_prefix="$1"
+  if [ -n "${GPREFIX}" ]; then
+    instance_name_prefix="${GPREFIX}-${instance_name_prefix}"
+  fi
+  if ! gcloud compute instances list --filter="labels.owner:${GUSER}" | awk '{if(NR>1)print}' | grep RUNNING | grep -q "^${instance_name_prefix}" ; then echo "no instances match \"labels.owner:${GUSER}\""; echo "${usage}"; return 1; fi
   gcloud compute instances delete --delete-disks=all $(gcloud compute instances list --filter="labels.owner:${GUSER}" | awk '{if(NR>1)print}' | grep RUNNING | grep "^${instance_name_prefix}" | awk '{print $1}' | xargs echo)
 }
 
