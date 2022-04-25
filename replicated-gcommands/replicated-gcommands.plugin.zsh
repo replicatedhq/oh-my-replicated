@@ -4,12 +4,12 @@
 # GPREFIX=
 
 if (( ! ${+commands[gcloud]} ));then
-  >&2 echo "gcloud not installed, not loading replicated-gcommands plugin"
+  print "gcloud not installed, not loading replicated-gcommands plugin"
   return 1
 fi
 
 genv() {
-  >&2 echo "Configuration: $(cat ~/.config/gcloud/active_config)"
+  echo "Configuration: $(cat ~/.config/gcloud/active_config)"
 }
 
 glist() {
@@ -37,21 +37,24 @@ gcreate() {
     instance_names=($(echo ${instance_names} | sed "s/[^ ]* */${GPREFIX}-&/g"))
   fi
   (set -x; gcloud compute instances create ${instance_names[@]} \
-    --labels owner="${GUSER}",email="${GUSER}__64__replicated__46__com" \
-    --machine-type=n1-standard-8 \
+    --labels owner="${GUSER}" \
+    --machine-type=n1-standard-4 \
     --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE \
     --service-account="${default_service_account}" \
     --scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append \
     --image="${image_name}" --image-project="${image_project}" \
-    --boot-disk-size=200GB --boot-disk-type=pd-ssd \
-    --create-disk size=100GB,type=pd-ssd,auto-delete=yes \
+    --boot-disk-size=200GB --boot-disk-type=pd-standard \
     --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any)
 }
 
 gdelete() {
   genv
-  local usage="Usage: gdelete [INSTANCE_NAMES]"
-  if ! gcloud compute instances list --filter="labels.owner:${GUSER}" | awk '{if(NR>1)print}' | grep RUNNING ; then echo "no instances match \"labels.owner:${GUSER}\""; echo "${usage}" return 1; fi
+  local usage="Usage: gdelete [INSTANCE_NAME_PREFIX]"
+  local instance_name_prefix="$1"
+  if [ -n "${GPREFIX}" ]; then
+    instance_name_prefix="${GPREFIX}-${instance_name_prefix}"
+  fi
+  if ! gcloud compute instances list --filter="labels.owner:${GUSER}" | awk '{if(NR>1)print}' | grep RUNNING | grep -q "^${instance_name_prefix}" ; then echo "no instances match \"labels.owner:${GUSER}\""; echo "${usage}"; return 1; fi
   gcloud compute instances delete --delete-disks=all $(gcloud compute instances list --filter="labels.owner:${GUSER}" | awk '{if(NR>1)print}' | grep RUNNING | grep "^${instance_name_prefix}" | awk '{print $1}' | xargs echo)
 }
 
@@ -96,7 +99,7 @@ gssh-forward() {
   local natip=$(gcloud compute instances describe "${instance_name}" --format="value(networkInterfaces[0].accessConfigs[0].natIP)")
   local ip=$(gcloud compute instances describe "${instance_name}" --format="value(networkInterfaces[0].networkIP)")
   # gcloud compute ssh --tunnel-through-iap "${instance_name}" -- -L 8800:$address:8800 -L 8888:$address:8888
-  ssh -L 8800:$ip:8800 -L 8888:$ip:8888 $natip
+  ssh -L 31880:$ip:8800 -L 31888:$ip:8888 $natip
 }
 
 gssh() {
