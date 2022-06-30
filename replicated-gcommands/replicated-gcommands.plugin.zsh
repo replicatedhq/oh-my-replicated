@@ -48,6 +48,22 @@ gcreate() {
     --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring --reservation-affinity=any)
 }
 
+gstart() {
+  genv
+  local usage="Usage: gstart [INSTANCE_NAMES]"
+  if [ "$#" -lt 1 ]; then echo "${usage}"; return 1; fi
+  local instance_name_prefix="$1"
+  gcloud compute instances start $(gcloud compute instances list --filter="labels.owner:${GUSER}" | awk '{if(NR>1)print}' | grep TERMINATED | grep "^${instance_name_prefix}" | awk '{print $1}' | xargs echo)
+}
+
+gstop() {
+  genv
+  local usage="Usage: gstop [INSTANCE_NAMES]"
+  if [ "$#" -lt 1 ]; then echo "${usage}"; return 1; fi
+  local instance_name_prefix="$1"
+  gcloud compute instances stop $(gcloud compute instances list --filter="labels.owner:${GUSER}" | awk '{if(NR>1)print}' | grep RUNNING | grep "^${instance_name_prefix}" | awk '{print $1}' | xargs echo)
+}
+
 gdelete() {
   genv
   local usage="Usage: gdelete [INSTANCE_NAME_PREFIX]"
