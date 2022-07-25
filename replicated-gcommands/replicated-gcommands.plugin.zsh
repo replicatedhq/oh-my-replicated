@@ -22,8 +22,8 @@ gcreate() {
   local usage="Usage: gcreate [IMAGE] [INSTANCE_NAMES]"
   if [ "$#" -lt 2 ]; then echo "${usage}"; return 1; fi
   local image
-  image="$(gcloud compute images list | grep -v arm | grep "$1" | awk 'NR == 1')"
-  if [ -z "${image}" ]; then image="$(gcloud compute images list --show-deprecated | grep "$1" | awk 'NR == 1')"; fi
+  image="$(gcloud compute images list | grep "$1" | grep -v arm | awk 'NR == 1')"
+  if [ -z "${image}" ]; then image="$(gcloud compute images list --show-deprecated --sort-by=~creationTimestamp | grep "$1" | grep -v arm | awk 'NR == 1')"; fi
   if [ -z "${image}" ]; then echo "gcreate: unknown image $image"; echo "${usage}"; return 1; fi
   local image_name
   image_name="$(echo "${image}" | awk '{print $1}')"
