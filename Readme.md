@@ -15,7 +15,7 @@ plugins=(
 Or install with a plugin manager like [`antigen`](https://github.com/zsh-users/antigen) in your `.zshrc` file or wherever you configure `antigen`:
 
 ```bash
-antigen bundle replicatedhq/oh-my-replicated
+antigen bundle replicatedhq/oh-my-replicated@main
 antigen apply
 ```
 
