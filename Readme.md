@@ -12,6 +12,13 @@ plugins=(
         )
 ```
 
+Or install with a plugin manager like [`antigen`](https://github.com/zsh-users/antigen) in your `.zshrc` file or wherever you configure `antigen`:
+
+```bash
+antigen bundle replicatedhq/oh-my-replicated
+antigen apply
+```
+
 # gcommands plugin
 
 Some commands to make working with gcloud easier.
