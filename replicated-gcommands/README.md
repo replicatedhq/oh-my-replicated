@@ -22,12 +22,15 @@ GPREFIX='chriss'
 source "/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
 source "/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"
 ```
+### expires-on
+
+Instances are created by default with a lifetime of one day. If you would like to change this, provide the -d argument before the image and instance names with a valid macOS `date` duration string (e.g. `5d` for five days, `2w` for two weeks). If the instance must not be automatically reaped, provide `never` in the place of the duration string.
 
 Example Usage:
 
 ```zsh
 ╭chris:~/.oh-my-zsh %
-╰➤ gcreate rhel-8-v20210817 chriss-test-rh
+╰➤ gcreate -d 1d rhel-8-v20210817 chriss-test-rh
 Configuration: qa-c
 +gcreate:15> echo chriss-test-rh
 +gcreate:15> gcloud compute instances create chriss-test-rh --labels 'owner=chriss' '--machine-type=n1-standard-4' '--subnet=default' '--network-tier=PREMIUM' '--maintenance-policy=MIGRATE' '--service-account=846065462912-compute@developer.gserviceaccount.com' '--scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append' '--image=rhel-8-v20210817' '--image-project=rhel-cloud' '--boot-disk-size=200GB' '--boot-disk-type=pd-standard' --no-shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring '--reservation-affinity=any'
@@ -44,3 +47,4 @@ Configuration: qa-c
 NAME            ZONE           MACHINE_TYPE   PREEMPTIBLE  INTERNAL_IP  EXTERNAL_IP   STATUS
 chriss-test-rh  us-central1-c  n1-standard-4               10.128.0.93  34.72.173.60  RUNNING
 ```
+
