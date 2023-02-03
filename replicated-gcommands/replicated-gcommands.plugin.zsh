@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # GUSER=
 # GPREFIX=
 
@@ -17,9 +16,33 @@ glist() {
   gcloud compute instances list --filter="labels.owner:${GUSER}"
 }
 
+getdate() {
+  local duration="$1"
+  case $OSTYPE in 
+    darwin*)
+      [ -z "$duration" ] && duration="1d" || :
+      date "-v+${duration}" '+%Y-%m-%d'
+      ;;
+    linux*)
+      [ -z "$duration" ] && duration="1 day" || :
+      date -d "${duration}" '+%Y-%m-%d'
+      ;;
+  esac
+}
+
 gcreate() {
   genv
-  local usage="Usage: gcreate [IMAGE] [INSTANCE_NAMES]"
+  local usage='Usage: gcreate [-d duration|never] <IMAGE> <INSTANCE_NAMES>'
+  local expires
+  while getopts ":d:" opt; do
+    case $opt in
+      d)
+        [ "$OPTARG" = "never" ] && expires="never" || expires="$(getdate "${OPTARG}")"    
+        ;;
+    esac
+  done
+  shift "$((OPTIND-1))"
+  [ -z "$expires" ] && expires="$(getdate)" || :
   if [ "$#" -lt 2 ]; then echo "${usage}"; return 1; fi
   local image
   image="$(gcloud compute images list | grep -v arm | grep "$1" | awk 'NR == 1')"
@@ -37,7 +60,7 @@ gcreate() {
     instance_names=($(echo ${instance_names} | sed "s/[^ ]* */${GPREFIX}-&/g"))
   fi
   (set -x; gcloud compute instances create ${instance_names[@]} \
-    --labels owner="${GUSER}",email="${GUSER}__64__replicated__46__com" \
+    --labels owner="${GUSER}",email="${GUSER}__64__replicated__46__com",expires-on="${expires}" \
     --machine-type=n1-standard-8 \
     --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --can-ip-forward \
     --service-account="${default_service_account}" \
