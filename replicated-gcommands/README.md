@@ -24,7 +24,7 @@ source "/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh
 ```
 ### expires-on
 
-Instances are created by default with a lifetime of one day. If you would like to change this, provide the -d argument before the image and instance names with a valid macOS `date` duration string (e.g. `5d` for five days, `2w` for two weeks). If the instance must not be automatically reaped, provide `never` in the place of the duration string.
+Instances are created by default with a lifetime of one day. If you would like to change this, provide the -d argument before the image and instance names with a valid `date` duration string (implementation dependent; for macOS/BSD `date`, `1d` == one day, `1w` == one week, etc; for Linux/GNU `date`, `1 day` == one day, `1 week` == 1 week, etc). If the instance must not be automatically reaped, provide `never` in the place of the duration string.
 
 Example Usage:
 
