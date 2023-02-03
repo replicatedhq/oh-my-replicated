@@ -16,6 +16,20 @@ glist() {
   gcloud compute instances list --filter="labels.owner:${GUSER}"
 }
 
+getdate() {
+  local duration="$1"
+  case $OSTYPE in 
+    darwin*)
+      [ -z "$duration" ] && duration="1d" || :
+      date "-v+${duration}" '+%Y-%m-%d'
+      ;;
+    linux*)
+      [ -z "$duration" ] && duration="1 day" || :
+      date -d "${duration}" '+%Y-%m-%d'
+      ;;
+  esac
+}
+
 gcreate() {
   genv
   local usage='Usage: gcreate [-d duration|never] <IMAGE> <INSTANCE_NAMES>'
@@ -23,12 +37,12 @@ gcreate() {
   while getopts ":d:" opt; do
     case $opt in
       d)
-        [ "$OPTARG" = "never" ] && expires="never" || expires="$(date "-v+${OPTARG}" '+%Y-%m-%d')"    
+        [ "$OPTARG" = "never" ] && expires="never" || expires="$(getdate "${OPTARG}")"    
         ;;
     esac
   done
   shift "$((OPTIND-1))"
-  [ -z "$expires" ] && expires="$(date -v+1d '+%Y-%m-%d')" || :
+  [ -z "$expires" ] && expires="$(getdate)" || :
   if [ "$#" -lt 2 ]; then echo "${usage}"; return 1; fi
   local image
   image="$(gcloud compute images list | grep -v arm | grep "$1" | awk 'NR == 1')"
