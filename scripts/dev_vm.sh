@@ -24,7 +24,7 @@ set -e
 VM_REGION="us-west3"
 VM_PROJECT="replicated-qa"
 VM_TYPE="n1-standard-8"
-VM_DISK_SIZE="500GB"
+VM_DISK_SIZE="50GB"
 VM_IMAGE_PROJECT="ubuntu-os-cloud"
 VM_IMAGE_FAMILY="ubuntu-2204-lts"
 
