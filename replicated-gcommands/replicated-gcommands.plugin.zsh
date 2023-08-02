@@ -44,6 +44,21 @@ gcreate() {
   shift "$((OPTIND-1))"
   [ -z "$expires" ] && expires="$(getdate)" || :
   if [ "$#" -lt 2 ]; then echo "${usage}"; return 1; fi
+  local machine_type
+  machine_type=""
+  if [ ! -z "$GMACHINETYPE" ]; then
+    echo "Using specified GCP machine type '${GMACHINETYPE}' (from \$GMACHINETYPE)"
+    machine_type="${GMACHINETYPE}"
+  else
+    machine_type="n1-standard-8"
+    echo "Using default GCP machine type '${machine_type}'"
+  fi
+  local min_cpu_platform
+  min_cpu_platform=""
+  if [[ "$(echo "$machine_type" | cut -d- -f1)" == "n1" ]]; then
+    echo "Adding '--min-cpu-platform=Intel Haswell' for nested virtualization"
+    min_cpu_platform="--min-cpu-platform=Intel Haswell"
+  fi
   local image
   image="$(gcloud compute images list | grep -v arm | grep "$1" | awk 'NR == 1')"
   if [ -z "${image}" ]; then image="$(gcloud compute images list --show-deprecated --sort-by=~creationTimestamp | grep "$1" | awk 'NR == 1')"; fi
@@ -61,9 +76,9 @@ gcreate() {
   fi
   (set -x; gcloud compute instances create ${instance_names[@]} \
     --labels owner="${GUSER}",email="${GUSER}__64__replicated__46__com",expires-on="${expires}" \
-    --machine-type=n1-standard-8 \
+    --machine-type="${machine_type}" \
     --enable-nested-virtualization \
-    --min-cpu-platform="Intel Haswell" \
+    $min_cpu_platform \
     --subnet=default --network-tier=PREMIUM --maintenance-policy=MIGRATE --can-ip-forward \
     --service-account="${default_service_account}" \
     --scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append \
