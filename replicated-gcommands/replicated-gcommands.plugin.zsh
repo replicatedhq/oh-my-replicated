@@ -154,7 +154,7 @@ gssh() {
   fi
   while true; do
     start_time="$(date -u +%s)"
-    gcloud compute ssh --tunnel-through-iap "${instance_name}"
+    gcloud compute ssh --tunnel-through-iap --ssh-flag="-A" "${instance_name}"
     end_time="$(date -u +%s)"
     elapsed="$(bc <<<"$end_time-$start_time")"
     if [ "${elapsed}" -gt "60" ]; then # there must be a better way to do this
